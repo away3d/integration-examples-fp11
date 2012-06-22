@@ -48,8 +48,6 @@ package
 		//Away3D engine variables
 		private var away3dView1:View3D;
 		private var away3dView2:View3D;
-		private var floorOffset:Number = 0;
-		private var activeHUD:Boolean = true;
 		
 		//starling engine variables
 		private var starlingWallScene:Starling;
@@ -91,9 +89,9 @@ package
 		private var starlingImpactSprite:StarlingImpactEffectSprite;
 		private var starlingHUDSprite:StarlingHUDSprite;
 		
-		// A counter to reposition the HUD using sin(bounceCtr)
-		private var bounceCtr:Number = 0;
-		
+		// runtime variables
+		private var sinCount:Number = 0;
+		private var activeHUD:Boolean = true;
 		
 		
 		
@@ -468,8 +466,7 @@ package
 			starlingHUDScene.renderFrame();
 			
 			//update the HUD position
-			bounceCtr += 0.04;
-			stage3DProxy2.x = 340 + 200*Math.sin(bounceCtr);
+			stage3DProxy2.x = 340 + 200*Math.sin(0.04*sinCount++);
 		}
 		
 		/**
