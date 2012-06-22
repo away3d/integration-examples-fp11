@@ -6,8 +6,8 @@
 <booleanAttribute key="DISABLE_COMPILE_PROCESS" value="false"/>
 <booleanAttribute key="KILL_PREVIOUS_VIEWER" value="true"/>
 <stringAttribute key="LAUNCHER_DEPENDENCIES" value="[Self]"/>
-<stringAttribute key="MAIN_CLASS" value="src/CombinedSceneTest.as"/>
-<stringAttribute key="OUTPUT" value="bin/CombinedSceneTest.swf"/>
+<stringAttribute key="MAIN_CLASS" value="src/Away3D_Starling_Layering_Demo.as"/>
+<stringAttribute key="OUTPUT" value="bin/Away3D_Starling_Layering_Demo.swf"/>
 <booleanAttribute key="PASS_CP" value="true"/>
 <booleanAttribute key="PASS_EXTERNS" value="true"/>
 <booleanAttribute key="PASS_MAIN_CLASS" value="true"/>
@@ -19,7 +19,7 @@
 <stringAttribute key="PRE_COMPILE_ANT" value="build/pre_compile.xml"/>
 <stringAttribute key="PROJECT_NAME" value="integration-examples-fp11"/>
 <booleanAttribute key="START_SWF_ENABLED" value="true"/>
-<stringAttribute key="START_SWF_LOCATION" value="bin/CombinedSceneTest.html"/>
+<stringAttribute key="START_SWF_LOCATION" value="bin/Away3D_Starling_Layering_Demo.html"/>
 <stringAttribute key="START_SWF_WITH" value="Browser"/>
 <booleanAttribute key="USE_PROJECT_COMPILER_ARGUMENTS" value="true"/>
 <stringAttribute key="bad_container_name" value="/integration-examples-fp11/launch"/>
