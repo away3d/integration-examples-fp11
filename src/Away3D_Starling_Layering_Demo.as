@@ -249,7 +249,7 @@ package
 			hellKnightMaterial.normalMap = Cast.bitmapTexture(HellknightNormal);
 			hellKnightMaterial.specularMap = Cast.bitmapTexture(HellknightSpecular);
 			hellKnightMaterial.lightPicker = fireLightPicker;
-			hellKnightMaterial.shadowMethod = fireShadowMethod;
+			//hellKnightMaterial.shadowMethod = fireShadowMethod;
 			
 			// Create a material for the sphere
 			sphereMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(16, 16, false, 0x80c0ff)));
@@ -274,7 +274,7 @@ package
 			ballMaterial.ambientColor = 0xffffff;
 			ballMaterial.ambient = 10;
 			ballMaterial.lightPicker = hudLightPicker;
-			ballMaterial.shadowMethod = hudShadowMethod;
+			//ballMaterial.shadowMethod = hudShadowMethod;
 
 		}
 		
