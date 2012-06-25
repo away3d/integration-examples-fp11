@@ -5,7 +5,6 @@ package
 	import starling.extensions.ClippedSprite;
 	import starling.display.Image;
 	import starling.textures.Texture;
-	import starling.events.Event;
 	import starling.display.Sprite;
 
 	/**
@@ -13,13 +12,13 @@ package
 	 */
 	public class StarlingHUDSprite extends Sprite
 	{
-		[Embed(source = "../assets/hud.png")]
+		[Embed(source = "../embeds/hud.png")]
 		private static const HUDImage:Class;
-		[Embed(source = "../assets/text.gif")]
+		[Embed(source = "../embeds/text.gif")]
 		private static const TextImage:Class;
-		[Embed(source = "../assets/inner.png")]
+		[Embed(source = "../embeds/inner.png")]
 		private static const InnerImage:Class;
-		[Embed(source = "../assets/outer.png")]
+		[Embed(source = "../embeds/outer.png")]
 		private static const OuterImage:Class;
 		private static var _instance:StarlingHUDSprite;
 		private var _text:ClippedSprite;

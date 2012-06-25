@@ -4,7 +4,6 @@ package
 	import starling.core.Starling;
 	import starling.extensions.ParticleSystem;
 	import starling.textures.Texture;
-	import starling.events.Event;
 	import starling.display.Sprite;
 
 	/**
@@ -13,9 +12,9 @@ package
 	public class StarlingImpactEffectSprite extends Sprite
 	{
 		// Starling Particle assets
-		[Embed(source="../assets/explode.pex", mimeType="application/octet-stream")]
+		[Embed(source="../embeds/explode.pex", mimeType="application/octet-stream")]
 		private static const ExplodeConfig:Class;
-		[Embed(source = "../assets/explode_particle.png")]
+		[Embed(source = "../embeds/explode_particle.png")]
 		private static const ExplodeParticle:Class;
 		private var mParticleSystem:ParticleSystem;
 		private static var _instance:StarlingImpactEffectSprite;

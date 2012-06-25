@@ -27,17 +27,17 @@ package
 	[SWF(width="800", height="600", frameRate="60")]
 	public class Away3D_Starling_Layering_Demo extends Sprite
 	{
-		[Embed(source="../assets/hellknight.jpg")]
+		[Embed(source="../embeds/hellknight.jpg")]
 		private var HellknightDiffuse:Class;
-		[Embed(source="../assets/hellknight_local.png")]
+		[Embed(source="../embeds/hellknight_local.png")]
 		private var HellknightNormal:Class;
-		[Embed(source="../assets/hellknight_s.png")]
+		[Embed(source="../embeds/hellknight_s.png")]
 		private var HellknightSpecular:Class;
-		[Embed(source="../assets/hellknight.md5mesh", mimeType="application/octet-stream")]
+		[Embed(source="../embeds/hellknight.md5mesh", mimeType="application/octet-stream")]
 		private var HellknightMesh:Class;
-		[Embed(source="../assets/walk7.md5anim", mimeType="application/octet-stream")]
+		[Embed(source="../embeds/walk7.md5anim", mimeType="application/octet-stream")]
 		private var HellknightWalkAnim:Class;
-		[Embed(source="../assets/woodfloor.jpg")]
+		[Embed(source="../embeds/woodfloor.jpg")]
 		private var WoodFloorImage:Class;
 		
 		// Stage manager and Stage3D instance proxy classes
@@ -173,15 +173,15 @@ package
 		
 			//Create the Starling scene to add the background wall/fireplace. This is positioned on top of the floor scene starting at the top of the screen. It slightly covers the wooden floor layer to avoid any gaps appearing.
 			starlingWallScene = new Starling(StarlingWallSprite, stage, stage3DProxy1.viewPort, stage3DProxy1.stage3D);
-			starlingWallScene.deferContextCalls = true;
+			starlingWallScene.shareContext = true;
 			
 			// Create the Starling scene that shows the foreground ball impact particle effect. This appears in front of all the other layers.
 			starlingImpactScene = new Starling(StarlingImpactEffectSprite, stage, stage3DProxy1.viewPort, stage3DProxy1.stage3D);
-			starlingImpactScene.deferContextCalls = true;
+			starlingImpactScene.shareContext = true;
 			
 		 	//Create the Starling scene that shows the foreground ball impact particle effect. This appears in front of all the other layers.
 			starlingHUDScene = new Starling(StarlingHUDSprite, stage, stage3DProxy2.viewPort, stage3DProxy2.stage3D);
-			starlingHUDScene.deferContextCalls = true;
+			starlingHUDScene.shareContext = true;
 		}
 		
 		/**
@@ -420,13 +420,13 @@ package
 			stage3DProxy1.clear();
 			
 			// Render the background Starling layer
-			starlingWallScene.renderFrame();
+			starlingWallScene.nextFrame();
 			
 			// Render the intermediate Away3D layer
 			away3dView1.render();
 			
 			// Render the foreground Starling layer
-			starlingImpactScene.renderFrame();
+			starlingImpactScene.nextFrame();
 			
 			// Present the Context3D object to Stage3D
 			stage3DProxy1.present();
@@ -463,7 +463,7 @@ package
 				starlingHUDSprite.updateScene();
 			
 			//render the foreground Starling layer
-			starlingHUDScene.renderFrame();
+			starlingHUDScene.nextFrame();
 			
 			//update the HUD position
 			stage3DProxy2.x = 340 + 200*Math.sin(0.04*sinCount++);

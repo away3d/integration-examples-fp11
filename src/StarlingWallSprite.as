@@ -6,7 +6,6 @@ package
 	import starling.extensions.ParticleSystem;
 	import starling.display.Image;
 	import starling.textures.Texture;
-	import starling.events.Event;
 	import starling.display.Sprite;
 
 	/**
@@ -14,16 +13,16 @@ package
 	 */
 	public class StarlingWallSprite extends Sprite
 	{
-		[Embed(source = "../assets/wall.jpg")]
+		[Embed(source = "../embeds/wall.jpg")]
 		private static const WallImage:Class;
-		[Embed(source = "../assets/wallfire.gif")]
+		[Embed(source = "../embeds/wallfire.gif")]
 		private static const FireplaceImage:Class;
-		[Embed(source = "../assets/wallfireback.jpg")]
+		[Embed(source = "../embeds/wallfireback.jpg")]
 		private static const FireplaceBackImage:Class;
 		// Starling Particle assets
-		[Embed(source="../assets/fire.pex", mimeType="application/octet-stream")]
+		[Embed(source="../embeds/fire.pex", mimeType="application/octet-stream")]
 		private static const FireConfig:Class;
-		[Embed(source = "../assets/fire_particle.png")]
+		[Embed(source = "../embeds/fire_particle.png")]
 		private static const FireParticle:Class;
 		private var mParticleSystem:ParticleSystem;
 		private static var _instance:StarlingWallSprite;
