@@ -151,7 +151,7 @@ package
 			away3dView1 = new View3D();
 			away3dView1.camera.z = -300;
 			away3dView1.stage3DProxy = stage3DProxy1;
-			away3dView1.deferContextCalls = true;
+			away3dView1.shareContext = true;
 			
 			addChild(away3dView1);
 			
@@ -160,7 +160,7 @@ package
 			//Create the second Away3D view which holds the spinning cubes
 			away3dView2 = new View3D();
 			away3dView2.stage3DProxy = stage3DProxy2;
-			away3dView2.deferContextCalls = true;
+			away3dView2.shareContext = true;
 			
 			addChild(away3dView2);
 		}
