@@ -31,14 +31,14 @@ THE SOFTWARE.
 
  */
 package
-{
-	import flash.geom.Rectangle;
+starling.rootsprites{
+	import flash.display.BitmapData;
 	import flash.display.GradientType;
 	import flash.geom.Matrix;
+	import flash.geom.Rectangle;
 	import starling.display.Image;
-	import flash.display.BitmapData;
-	import starling.textures.Texture;
 	import starling.display.Sprite;
+	import starling.textures.Texture;
 
 	public class StarlingCheckerboardSprite extends Sprite
 	{		

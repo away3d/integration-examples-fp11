@@ -31,47 +31,48 @@ THE SOFTWARE.
 
  */
 package
-{
-	import starling.extensions.PDParticleSystem;
+starling.rootsprites{
 	import starling.core.Starling;
+	import starling.extensions.PDParticleSystem;
 	import starling.extensions.ParticleSystem;
 	import starling.textures.Texture;
 	import starling.display.Sprite;
 
-	public class StarlingImpactEffectSprite extends Sprite
+	public class StarlingStarsSprite extends Sprite
 	{
 		// Starling Particle assets
-		[Embed(source="../embeds/explode.pex", mimeType="application/octet-stream")]
-		private static const ExplodeConfig:Class;
-		[Embed(source = "../embeds/explode_particle.png")]
-		private static const ExplodeParticle:Class;
+		[Embed(source="../embeds/stars.pex", mimeType="application/octet-stream")]
+		private static const StarsConfig:Class;
+		
+		[Embed(source = "../embeds/stars.png")]
+		private static const StarsParticle:Class;
+		
+		private static var _instance:StarlingStarsSprite;
+		
 		private var mParticleSystem:ParticleSystem;
-		private static var _instance:StarlingImpactEffectSprite;
-
-		public static function getInstance():StarlingImpactEffectSprite
+		
+		public static function getInstance():StarlingStarsSprite
 		{
 			return _instance;
 		}
 
-		public function StarlingImpactEffectSprite()
+		public function StarlingStarsSprite()
 		{
 			_instance = this;
 			
-			var psConfig:XML = XML(new ExplodeConfig());
-			var psTexture:Texture = Texture.fromBitmap(new ExplodeParticle());
+			var psConfig:XML = XML(new StarsConfig());
+			var psTexture:Texture = Texture.fromBitmap(new StarsParticle());
 
 			mParticleSystem = new PDParticleSystem(psConfig, psTexture);
-			mParticleSystem.emitterX = 460;
-			mParticleSystem.emitterY = 430;
-			mParticleSystem.maxCapacity = 75;
+			mParticleSystem.emitterX = 400;
+			mParticleSystem.emitterY = 300;
+			mParticleSystem.maxCapacity = 100;
+			mParticleSystem.emissionRate = 50;
 			this.addChild(mParticleSystem);
 
 			Starling.juggler.add(mParticleSystem);
-		}
-
-		public function fireUp():void
-		{
-			mParticleSystem.start(0.3);
+			
+			mParticleSystem.start();
 		}
 	}
 }

@@ -31,7 +31,7 @@ THE SOFTWARE.
 
  */
 package
-{
+starling.rootsprites{
 	import starling.display.Quad;
 	import starling.display.DisplayObject;
 	import starling.core.Starling;

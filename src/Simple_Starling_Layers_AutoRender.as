@@ -44,17 +44,19 @@ THE SOFTWARE.
 
  */
 package {
-	import flash.text.TextFormat;
-	import flash.text.TextField;
-	import flash.events.MouseEvent;
-	import away3d.events.Stage3DEvent;
-	import starling.core.Starling;
-	import flash.events.Event;
-	import away3d.core.managers.Stage3DProxy;
 	import away3d.core.managers.Stage3DManager;
+	import away3d.core.managers.Stage3DProxy;
+	import away3d.events.Stage3DEvent;
+	import flash.display.Sprite;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
-	import flash.display.Sprite;
+	import flash.events.Event;
+	import flash.events.MouseEvent;
+	import flash.text.TextField;
+	import flash.text.TextFormat;
+	import starling.core.Starling;
+	import starling.rootsprites.StarlingCheckerboardSprite;
+	import starling.rootsprites.StarlingStarsSprite;
 
 	[SWF(width="800", height="600", frameRate="60")]
 	public class Simple_Starling_Layers_AutoRender extends Sprite {

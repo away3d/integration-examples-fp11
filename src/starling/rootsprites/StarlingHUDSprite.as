@@ -31,7 +31,7 @@ THE SOFTWARE.
 
  */
 package
-{
+starling.rootsprites{
 	import flash.geom.Rectangle;
 
 	import starling.extensions.ClippedSprite;

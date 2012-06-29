@@ -50,26 +50,28 @@ THE SOFTWARE.
 
  */
 package {
-	import flash.text.TextFormat;
-	import flash.events.MouseEvent;
+	import away3d.containers.View3D;
+	import away3d.controllers.HoverController;
+	import away3d.core.managers.Stage3DManager;
+	import away3d.core.managers.Stage3DProxy;
+	import away3d.debug.AwayStats;
+	import away3d.entities.Mesh;
+	import away3d.events.Stage3DEvent;
+	import away3d.materials.TextureMaterial;
 	import away3d.primitives.CubeGeometry;
 	import away3d.primitives.WireframeGrid;
 	import away3d.textures.BitmapTexture;
 	import flash.display.BitmapData;
-	import away3d.debug.AwayStats;
-	import away3d.entities.Mesh;
-	import away3d.materials.TextureMaterial;
-	import away3d.controllers.HoverController;
-	import away3d.containers.View3D;
-	import flash.text.TextField;
-	import away3d.events.Stage3DEvent;
-	import starling.core.Starling;
-	import flash.events.Event;
-	import away3d.core.managers.Stage3DProxy;
-	import away3d.core.managers.Stage3DManager;
+	import flash.display.Sprite;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
-	import flash.display.Sprite;
+	import flash.events.Event;
+	import flash.events.MouseEvent;
+	import flash.text.TextField;
+	import flash.text.TextFormat;
+	import starling.core.Starling;
+	import starling.rootsprites.StarlingCheckerboardSprite;
+	import starling.rootsprites.StarlingStarsSprite;
 
 	[SWF(width="800", height="600", frameRate="60")]
 	public class Intermediate_One_Away3D_Two_Starling_Layers extends Sprite {
