@@ -1,5 +1,38 @@
+/* 
+Framework Integration Example
+
+Starling scene used in the framework integration examples.
+
+Code by Greg Caldwell
+greg@geepers.co.uk
+http://www.geepers.co.uk
+
+This code is distributed under the MIT License
+
+Copyright (c)  
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+ */
 package
 {
+	import starling.display.Quad;
 	import starling.display.DisplayObject;
 	import starling.core.Starling;
 	import starling.extensions.PDParticleSystem;
@@ -8,36 +41,40 @@ package
 	import starling.textures.Texture;
 	import starling.display.Sprite;
 
-	/**
-	 * @author Greg
-	 */
 	public class StarlingWallSprite extends Sprite
 	{
 		[Embed(source = "../embeds/wall.jpg")]
 		private static const WallImage:Class;
+		
 		[Embed(source = "../embeds/wallfire.gif")]
 		private static const FireplaceImage:Class;
+		
 		[Embed(source = "../embeds/wallfireback.jpg")]
 		private static const FireplaceBackImage:Class;
+		
 		// Starling Particle assets
 		[Embed(source="../embeds/fire.pex", mimeType="application/octet-stream")]
 		private static const FireConfig:Class;
+		
 		[Embed(source = "../embeds/fire_particle.png")]
 		private static const FireParticle:Class;
-		private var mParticleSystem:ParticleSystem;
+		
 		private static var _instance:StarlingWallSprite;
-		private var _wall:Sprite;
-		private var _wallparts:Vector.<DisplayObject>;
-		private var _width:Number;
+		
+		private var mParticleSystem:ParticleSystem;
+		private var wallContainer:Sprite;
+		private var wallParts:Vector.<DisplayObject>;
+		private var _width : Number;
+		private var overlay : Quad;
 
 		public function get wall():Sprite
 		{
-			return _wall;
+			return wallContainer;
 		}
 
 		public function set wall(wall:Sprite):void
 		{
-			_wall = wall;
+			wallContainer = wall;
 		}
 
 		public static function getInstance():StarlingWallSprite
@@ -52,17 +89,17 @@ package
 			var wall:Texture = Texture.fromBitmap(new WallImage());
 			var fireplace:Texture = Texture.fromBitmap(new FireplaceImage());
 			var fireplaceBack:Texture = Texture.fromBitmap(new FireplaceBackImage());
+			
+			wallParts = new Vector.<DisplayObject>();
 
-			_wallparts = new Vector.<DisplayObject>();
-
-			_wall = new Sprite();
-			addChild(_wall);
+			wallContainer = new Sprite();
+			addChild(wallContainer);
 
 			for (var fX:int = 0; fX < 3; fX++) {
 				if (fX == 2) {
 					var fire:Sprite = new Sprite();
 					fire.addChild(new Image(fireplaceBack));
-
+					
 					var psConfig:XML = XML(new FireConfig());
 					var psTexture:Texture = Texture.fromBitmap(new FireParticle());
 
@@ -76,28 +113,35 @@ package
 					fire.addChild(new Image(fireplace));
 					fire.x = fX*image.width;
 					fire.name = "fire";
-					_wall.addChild(fire);
+					wallContainer.addChild(fire);
 
 					Starling.juggler.add(mParticleSystem);
-					_wallparts.push(fire);
+					wallParts.push(fire);
 				} else {
 					var image:Image = new Image(wall);
 					image.x = fX*image.width;
 					image.name = "image_" + fX;
 
-					_wall.addChild(image);
-					_wallparts.push(image);
+					wallContainer.addChild(image);
+					wallParts.push(image);
 				}
 			}
-			_width = _wall.width;
+			_width = wallContainer.width;
+			
+			overlay = new Quad(1024, 512, 0x0, false);
+			wallContainer.addChild(overlay);
 		}
 
 		public function scrollWall(distance:Number):void
 		{
-			for each (var dO:DisplayObject in _wallparts) {
+			for each (var dO:DisplayObject in wallParts) {
 				dO.x += distance;
 				if (dO.x < -512) dO.x += _width;
 			}
+		}
+		
+		public function set glowIntensity(intensity:Number) : void {
+			overlay.alpha = 0.6 - (intensity * 0.6);
 		}
 	}
 }

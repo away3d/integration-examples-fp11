@@ -1,5 +1,53 @@
+/* 
+Framework Integration Example
+
+Demonstrates :
+
+An advanced example of multiple frameworks being layered together on multiple
+stage3D/context3D instances via the Stage3DProxy class. This is and extreme example
+using two Stage3DProxies. The first Stage3DProxy instance contains a scrolling background
+wall using the Starling framework with a particle based fire. Layered on top of this is 
+an Away3D View3D instance containing an animated MD5 model casting a shadow onto a floor 
+plane. Also in the same View3D a sphere continually impacts the MD5 model which triggers
+a particle effect in a secondary Starling layer on top of the View3D layer. 
+
+The second Stage3DProxy instance is overlayed on the first instance and acts like a HUD.
+It has a smaller size than the stage and is also repositioned on the stage during the
+demo. It has a View3D layer containing rotating cube with spheres rotating around it and
+a Starling layer overlayed showing some scrolling text and rotating bitmaps.
+ 
+Code by Greg Caldwell & Rob Bateman
+greg@geepers.co.uk
+http://www.geepers.co.uk
+rob@infiniteturtles.co.uk
+http://www.infiniteturtles.co.uk
+
+This code is distributed under the MIT License
+
+Copyright (c)  
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+ */
 package
 {
+	import flash.utils.getTimer;
 	import away3d.animators.*;
 	import away3d.animators.data.*;
 	import away3d.containers.*;
@@ -40,40 +88,42 @@ package
 		[Embed(source="../embeds/woodfloor.jpg")]
 		private var WoodFloorImage:Class;
 		
-		// Stage manager and Stage3D instance proxy classes
+		// Stage manager and Stage3D instance proxy classes 
 		private var stage3DManager:Stage3DManager;
 		private var stage3DProxy1:Stage3DProxy;
 		private var stage3DProxy2:Stage3DProxy;
+		private var s3DProxy1hasContext : Boolean = false;
+		private var s3DProxy2hasContext : Boolean = false;
 		
-		//Away3D engine variables
+		// Away3D engine variables
 		private var away3dView1:View3D;
 		private var away3dView2:View3D;
 		
-		//starling engine variables
+		// Starling engine variables
 		private var starlingWallScene:Starling;
 		private var starlingImpactScene:Starling;
 		private var starlingHUDScene:Starling;
 		
-		//view 1 light objects
+		// View 1 light objects
 		private var fireLightLocation:Vector3D;
 		private var fireLight:DirectionalLight;
 		private var fireShadowMethod:TripleFilteredShadowMapMethod;
 		private var fireLightPicker:StaticLightPicker;
 		
-		//view 2 light objects
+		// View 2 light objects
 		private var hudLightLocation:Vector3D;
 		private var hudLight:DirectionalLight;
 		private var hudShadowMethod:TripleFilteredShadowMapMethod;
 		private var hudLightPicker:StaticLightPicker;
 		
-		//Away3D material objects
+		// Away3D material objects
 		private var floorMaterial:TextureMaterial;
 		private var hellKnightMaterial:TextureMaterial;
 		private var sphereMaterial:TextureMaterial;
 		private var cubeMaterial:TextureMaterial;
 		private var ballMaterial:TextureMaterial;
 		
-		//Away3D scene objects
+		// Away3D scene objects
 		private var hellKnightMesh:Mesh;
 		private var hellKnightAnimator:SmoothSkeletonAnimator;
 		private var floorPlane:Mesh;
@@ -84,16 +134,15 @@ package
 		private var hudContainer2:ObjectContainer3D;
 		private var hudContainer3:ObjectContainer3D;
 		
-		//Starling scene objects
+		// Starling scene objects
 		private var starlingWallSprite:StarlingWallSprite;
 		private var starlingImpactSprite:StarlingImpactEffectSprite;
 		private var starlingHUDSprite:StarlingHUDSprite;
 		
-		// runtime variables
+		// Runtime variables
 		private var sinCount:Number = 0;
-		private var activeHUD:Boolean = true;
-		
-		
+		private var activeHUD : Boolean = false;
+		private var startTime : Number;
 		
 				
 		/**
@@ -112,10 +161,14 @@ package
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
 			
+			startTime = getTimer();
+			
 			initProxies();
+		}
+		
+		private function initScenes():void {
 			initAway3D();
 			initStarling();
-			//initText();
 			initLights();
 			initMaterials();
 			initObjects();
@@ -132,15 +185,26 @@ package
 
 			// Create a new Stage3D proxy for the first Stage3D object
 			stage3DProxy1 = stage3DManager.getFreeStage3DProxy();
-			stage3DProxy1.color = 0x66aa00;
+			stage3DProxy1.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated);
+			stage3DProxy1.color = 0x000000;
 
 			// Create a new Stage3D proxy for the second Stage3D object
 			stage3DProxy2 = stage3DManager.getFreeStage3DProxy();
+			stage3DProxy2.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated);
 			stage3DProxy2.color = 0x000000;
 			stage3DProxy2.y = 5;
 			stage3DProxy2.width = 256;
 			stage3DProxy2.height = 256;
 		}
+		
+		/**
+		 * Wait until both stage3DProxy instances have a Context3D
+		 */
+		private function onContextCreated(event : Stage3DEvent) : void {
+			if (event.currentTarget == stage3DProxy1) s3DProxy1hasContext = true;
+			if (event.currentTarget == stage3DProxy2) s3DProxy2hasContext = true;
+			if (s3DProxy1hasContext && s3DProxy2hasContext) initScenes();
+		}		 
 		
 		/**
 		 * Initialise the Away3D scenes
@@ -169,19 +233,15 @@ package
 		 * Initialise the Starling scenes
 		 */
 		private function initStarling():void
-		{
-		
+		{		
 			//Create the Starling scene to add the background wall/fireplace. This is positioned on top of the floor scene starting at the top of the screen. It slightly covers the wooden floor layer to avoid any gaps appearing.
 			starlingWallScene = new Starling(StarlingWallSprite, stage, stage3DProxy1.viewPort, stage3DProxy1.stage3D);
-			starlingWallScene.shareContext = true;
 			
 			// Create the Starling scene that shows the foreground ball impact particle effect. This appears in front of all the other layers.
 			starlingImpactScene = new Starling(StarlingImpactEffectSprite, stage, stage3DProxy1.viewPort, stage3DProxy1.stage3D);
-			starlingImpactScene.shareContext = true;
 			
 		 	//Create the Starling scene that shows the foreground ball impact particle effect. This appears in front of all the other layers.
 			starlingHUDScene = new Starling(StarlingHUDSprite, stage, stage3DProxy2.viewPort, stage3DProxy2.stage3D);
-			starlingHUDScene.shareContext = true;
 		}
 		
 		/**
@@ -233,6 +293,7 @@ package
 		{
 			// Create a material for the floor
 			floorMaterial = new TextureMaterial(Cast.bitmapTexture(WoodFloorImage));
+			floorMaterial.animateUVs = true;
 			floorMaterial.ambient = 2.5;
 			floorMaterial.lightPicker = fireLightPicker;
 			floorMaterial.normalMap = new BitmapTexture(new BitmapData(128, 128, false, 0xff807fff));
@@ -284,9 +345,9 @@ package
 		private function initObjects():void
 		{
 			// Build the floor plane, assign the material, position it and scale it's texturing
-			floorPlane = new Mesh(new PlaneGeometry(2000, 150), floorMaterial);
+			floorPlane = new Mesh(new PlaneGeometry(2000, 135), floorMaterial);
 			floorPlane.y = -150;
-			floorPlane.geometry.scaleUV(20, 1);
+			floorPlane.geometry.scaleUV(15, 1);
 			away3dView1.scene.addChild(floorPlane);
 			
 			//build the attack sphere
@@ -377,35 +438,36 @@ package
 		 */
 		private function onEnterFrame(event:Event):void
 		{
+			// Move the scene objects in line with the monster and use the location to synchronize other scene objects.
+			if (!hellKnightMesh) return;
+			
+			var syncWidth:Number = 110;
+			var lastPosition:Number = floorPlane.x;
+			
+			away3dView1.camera.x = sphereContainer.x = floorPlane.x = hellKnightMesh.x;
+			
 			// Update the direction of the light to approximately coincide with the position of the fireplace (Starling scene)
-			fireLightLocation.x += 0.2;
+			fireLightLocation.x = -65 + ((hellKnightMesh.x * 0.105) % syncWidth);
 			
-			//wrap light direction if fireplace moved on too far
-			if (fireLightLocation.x > 45)
-				fireLightLocation.x = -65;
-			
-			//apply light direction to Away3D light object
+			// Apply light direction to Away3D light object with random jitter
 			fireLight.direction = fireLightLocation.add(new Vector3D(Math.random(), Math.random(), Math.random()));
 			
 			// Vary the intensity of the light based on the position of the light in the scene;
-			var intensity:Number = 1 - Math.abs(2*((fireLightLocation.x + 5)/110));
+			var intensity:Number = 1 - Math.abs( 2 * ((fireLightLocation.x + 9) / syncWidth));
 			fireLight.diffuse = fireLight.specular = intensity;
 			
 			// Vary the ambient value of the monster based on the light position
-			hellKnightMaterial.ambient = 7.5 + (intensity*3);
+			hellKnightMaterial.ambient = 7.5 + (intensity * 3);		
 			
-			// Move the scene objects in line with the monster.
-			if (hellKnightMesh)
-				away3dView1.camera.x = sphereContainer.x = hellKnightMesh.x;
-			
-			// (Away3D) Reposition the Wooden floor
-			if (away3dView1.camera.x > floorPlane.x + 500)
-				floorPlane.x += 1000;
+			// (Away3D) Reposition the Wooden floor material offset (horizontal scrolling)
+			floorPlane.subMeshes[0].offsetU = hellKnightMesh.x / syncWidth * 0.85;
 			
 			// Scroll the background Starling wall
 			starlingWallSprite = StarlingWallSprite.getInstance();
-			if (starlingWallSprite)
-				starlingWallSprite.scrollWall(-2.75);
+			if (starlingWallSprite) {
+				starlingWallSprite.scrollWall((lastPosition - hellKnightMesh.x) * 1.475);
+				starlingWallSprite.glowIntensity = intensity;
+			}
 			
 			// Update the attack sphere
 			attackSphere.x -= 10;
