@@ -239,6 +239,7 @@ package {
 			away3dView2 = new View3D();
 			away3dView2.stage3DProxy = stage3DProxy2;
 			away3dView2.shareContext = true;
+			away3dView2.width = away3dView2.height = 256;
 			
 			addChild(away3dView2);
 		}
