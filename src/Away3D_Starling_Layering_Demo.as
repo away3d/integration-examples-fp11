@@ -46,10 +46,10 @@ THE SOFTWARE.
 
  */
 package {
-	import flash.geom.Rectangle;
-	import away3d.animators.SmoothSkeletonAnimator;
-	import away3d.animators.data.SkeletonAnimationSequence;
-	import away3d.animators.data.SkeletonAnimationState;
+	import away3d.animators.SkeletonAnimationSet;
+	import away3d.animators.SkeletonAnimationState;
+	import away3d.animators.SkeletonAnimator;
+	import away3d.animators.data.Skeleton;
 	import away3d.containers.ObjectContainer3D;
 	import away3d.containers.View3D;
 	import away3d.core.managers.Stage3DManager;
@@ -83,6 +83,7 @@ package {
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
+	import flash.geom.Rectangle;
 	import flash.geom.Vector3D;
 	import flash.utils.getTimer;
 
@@ -139,7 +140,9 @@ package {
 		
 		// Away3D scene objects
 		private var hellKnightMesh:Mesh;
-		private var hellKnightAnimator:SmoothSkeletonAnimator;
+		private var hellKnightSkeleton : Skeleton;
+		private var hellKnightAnimator:SkeletonAnimator;
+		private var hellKnightAnimationSet : SkeletonAnimationSet;
 		private var floorPlane:Mesh;
 		private var attackSphere:Mesh;
 		private var sphereContainer:ObjectContainer3D;
@@ -430,19 +433,23 @@ package {
 		 */
 		private function onAssetComplete(event:AssetEvent):void
 		{
-			if (event.asset.assetType == AssetType.ANIMATION) {
-				var seq:SkeletonAnimationSequence = event.asset as SkeletonAnimationSequence;
-				seq.name = event.asset.assetNamespace;
-				seq.looping = true;
-				hellKnightAnimator = new SmoothSkeletonAnimator(hellKnightMesh.animationState as SkeletonAnimationState);
-				hellKnightAnimator.addSequence(seq);
+			if (event.asset.assetType == AssetType.ANIMATION_STATE) {
+				var state:SkeletonAnimationState = event.asset as SkeletonAnimationState;
+				state.looping = true;
+				hellKnightAnimationSet.addState(event.asset.assetNamespace, state);
 
 				hellKnightAnimator.play("walk7");
+			} else if  (event.asset.assetType == AssetType.ANIMATION_SET) {
+				hellKnightAnimationSet = event.asset as SkeletonAnimationSet;
+				hellKnightAnimator = new SkeletonAnimator(hellKnightAnimationSet, hellKnightSkeleton);
+				hellKnightMesh.animator = hellKnightAnimator;
+			} else if  (event.asset.assetType == AssetType.SKELETON) {
+				hellKnightSkeleton = event.asset as Skeleton;
 			} else if (event.asset.assetType == AssetType.MESH) {
 				hellKnightMesh = event.asset as Mesh;
 				hellKnightMesh.material = hellKnightMaterial;
 				hellKnightMesh.y = -150;
-				hellKnightMesh.rotationY = -90;
+				hellKnightMesh.rotationY = 90;
 				away3dView1.scene.addChild(hellKnightMesh);
 
 				AssetLibrary.loadData(new HellknightWalkAnim(), null, "walk7", new MD5AnimParser());
