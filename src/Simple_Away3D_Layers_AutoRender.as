@@ -46,10 +46,10 @@ THE SOFTWARE.
 
  */
 package {
+	import away3d.primitives.WireframePlane;
 	import flash.geom.Rectangle;
 	import flash.text.TextFormat;
 	import flash.text.TextField;
-	import away3d.primitives.WireframeGrid;
 	import away3d.containers.ObjectContainer3D;
 	import away3d.primitives.SphereGeometry;
 	import flash.events.MouseEvent;
@@ -225,7 +225,7 @@ package {
 			away3dView1.scene.addChild(cube3);
 			away3dView1.scene.addChild(cube4);
 			away3dView1.scene.addChild(cube5);
-			away3dView1.scene.addChild(new WireframeGrid(20, 2500, 1.5, 0xaa7700));
+			//away3dView1.scene.addChild(new WireframePlane(20, 2500, 1.5, 0xaa7700));
 			
 			// Build the spheres for view 2
 			var sG:SphereGeometry = new SphereGeometry(200);

@@ -50,28 +50,22 @@ THE SOFTWARE.
 
  */
 package {
-	import away3d.containers.View3D;
-	import away3d.controllers.HoverController;
-	import away3d.core.managers.Stage3DManager;
-	import away3d.core.managers.Stage3DProxy;
-	import away3d.debug.AwayStats;
-	import away3d.entities.Mesh;
-	import away3d.events.Stage3DEvent;
-	import away3d.materials.TextureMaterial;
-	import away3d.primitives.CubeGeometry;
-	import away3d.primitives.WireframeGrid;
-	import away3d.textures.BitmapTexture;
-	import flash.display.BitmapData;
-	import flash.display.Sprite;
-	import flash.display.StageAlign;
-	import flash.display.StageScaleMode;
-	import flash.events.Event;
-	import flash.events.MouseEvent;
-	import flash.text.TextField;
-	import flash.text.TextFormat;
-	import starling.core.Starling;
-	import starling.rootsprites.StarlingCheckerboardSprite;
-	import starling.rootsprites.StarlingStarsSprite;
+	import away3d.containers.*;
+	import away3d.controllers.*;
+	import away3d.core.managers.*;
+	import away3d.debug.*;
+	import away3d.entities.*;
+	import away3d.events.*;
+	import away3d.materials.*;
+	import away3d.primitives.*;
+	import away3d.textures.*;
+	
+	import flash.display.*;
+	import flash.events.*;
+	import flash.text.*;
+	
+	import starling.core.*;
+	import starling.rootsprites.*;
 
 	[SWF(width="800", height="600", frameRate="60")]
 	public class Intermediate_One_Away3D_Two_Starling_Layers extends Sprite {
@@ -225,7 +219,7 @@ package {
 			away3dView.scene.addChild(cube3);
 			away3dView.scene.addChild(cube4);
 			away3dView.scene.addChild(cube5);
-			away3dView.scene.addChild(new WireframeGrid(20, 2500, 1.5, 0xbbbb00));
+			//away3dView.scene.addChild(new WireframePlane(20, 2500, 1.5, 0xbbbb00));
 		}
 		
 		/**
