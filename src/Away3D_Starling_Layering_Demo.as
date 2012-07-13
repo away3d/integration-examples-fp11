@@ -228,6 +228,7 @@ package
 			away3dView2 = new View3D();
 			away3dView2.stage3DProxy = stage3DProxy2;
 			away3dView2.shareContext = true;
+			away3dView2.width = away3dView2.height = 256;
 			
 			addChild(away3dView2);
 		}
@@ -244,7 +245,8 @@ package
 			starlingImpactScene = new Starling(StarlingImpactEffectSprite, stage, stage3DProxy1.viewPort, stage3DProxy1.stage3D);
 			
 		 	//Create the Starling scene that shows the foreground ball impact particle effect. This appears in front of all the other layers.
-			starlingHUDScene = new Starling(StarlingHUDSprite, stage, stage3DProxy2.viewPort, stage3DProxy2.stage3D);
+		 	var viewRect:Rectangle = new Rectangle(0, 0, 256, 256);
+			starlingHUDScene = new Starling(StarlingHUDSprite, stage, viewRect, stage3DProxy2.stage3D);
 		}
 		
 		/**

@@ -3,20 +3,22 @@ Framework Integration Example
 
 Demonstrates :
 
-A demonstration of how to combine multiple Away3D View3D instances using the same
-Stage3D/Context3D via the Stage3DProxy class. Using this method, it is possible to
-create independant scenes and cameras and combine them for rendering. As the stage3D
-instance utilises as single depth test buffer, the scenes are combined rather than
-layered.
+A demonstration of how to two framework layers can be independently positioned and
+resized with the shared Stage3D/Context3D.
 
-One view3D instance contains an arrangement of cubes on a wire grid. A hovercontroller
-is used to allow this scene to be rotated using the mouse. The second view3D instance
-contains an arrangement of spheres which rotate but have a fixed camera position.
+In this example, one Starling sprite scene contains a bitmap/transparent checkerboard 
+that is centered on the display and is rotated and an Away3D scene is an arrangement of 
+cubes on a wireframe grid. Each layer is repositioned and resized within the stage3D
+instance. This 3D scene has a hovercontroller attached to it allowing you to rotate 
+the scene with the mouse. Note, it mouse control only interacts with the 3D scene.
 
-This particular example demonstrates how to use the manual rendering approach of the 
-Stage3DProxy class by adding the EnterFrame listener to the 'stage' object and wrapping 
-explicit calls to the Stage3DProxy.clear() and Stage3DProxy.present() methods around the
-individual layer render method calls.
+Clicking the button changes the rendering order of the layers so you can see how they
+interact.
+
+This particular example demonstrates how to use the automatic rendering approach of the 
+Stage3DProxy class by adding the EnterFrame listener to the 'stage3DProxy' instance. The 
+listener method then only needs to manage the render calls as the clear() and present()
+methods are automatically called.
 
 Code by Greg Caldwell
 greg@geepers.co.uk
@@ -46,60 +48,55 @@ THE SOFTWARE.
 
  */
 package {
-	import away3d.primitives.WireframePlane;
-	import flash.text.TextFormat;
-	import flash.text.TextField;
-	import flash.geom.Rectangle;
-	import away3d.containers.ObjectContainer3D;
-	import away3d.primitives.SphereGeometry;
-	import flash.events.MouseEvent;
+	import starling.rootsprites.StarlingCheckerboardSprite;
+	import away3d.containers.View3D;
 	import away3d.controllers.HoverController;
-	import flash.events.Event;
-	import flash.display.BitmapData;
-	import away3d.textures.BitmapTexture;
+	import away3d.core.managers.Stage3DManager;
+	import away3d.core.managers.Stage3DProxy;
+	import away3d.debug.AwayStats;
+	import away3d.entities.Mesh;
+	import away3d.events.Stage3DEvent;
 	import away3d.materials.TextureMaterial;
 	import away3d.primitives.CubeGeometry;
-	import away3d.entities.Mesh;
-	import away3d.debug.AwayStats;
-	import away3d.containers.View3D;
-	import away3d.core.managers.Stage3DProxy;
-	import away3d.core.managers.Stage3DManager;
+	import away3d.primitives.WireframePlane;
+	import away3d.textures.BitmapTexture;
+
+	import starling.core.Starling;
+
+	import flash.display.BitmapData;
+	import flash.display.Sprite;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
-	import flash.display.Sprite;
+	import flash.events.Event;
+	import flash.events.MouseEvent;
+	import flash.geom.Rectangle;
+	import flash.text.TextField;
+	import flash.text.TextFormat;
 
 	[SWF(width="800", height="600", frameRate="60")]
-	public class Simple_Away3D_Layers_ManualRender extends Sprite {
+	public class Dynamic_Layer_Position_And_Size extends Sprite {
 		[Embed(source="../embeds/button.png")]
 		private var ButtonBitmap:Class;
-
+		
 		// Stage manager and proxy instances
 		private var stage3DManager : Stage3DManager;
 		private var stage3DProxy : Stage3DProxy;
-		
-		// Away3D view instances
-		private var away3dView1 : View3D;
-		private var away3dView2 : View3D;
 
+		// Away3D view instance
+		private var away3dView : View3D;
+		
 		// Camera controllers 
 		private var hoverController : HoverController;
 				
 		// Materials
 		private var cubeMaterial : TextureMaterial;
-		private var sphereMaterial : TextureMaterial;
-		
+
 		// Objects
 		private var cube1 : Mesh;
 		private var cube2 : Mesh;
 		private var cube3 : Mesh;
 		private var cube4 : Mesh;
 		private var cube5 : Mesh;
-		private var sphere1 : Mesh;
-		private var sphere2 : Mesh;
-		private var sphere3 : Mesh;
-		private var sphere4 : Mesh;
-		private var sphere5 : Mesh;
-		private var sphereContainer : ObjectContainer3D;
 		
 		// Runtime variables
 		private var lastPanAngle : Number = 0;
@@ -109,15 +106,22 @@ package {
 		private var mouseDown : Boolean;
 		private var renderOrderDesc : TextField;
 		private var renderOrder : int = 0;
+		private var counter : Number = 0;
+		private var s3DWidth : int;
+		private var s3DHeight : int;
+		private var starlingViewPort : Rectangle;
 		
-		// Constants				
-		private const CUBES_SPHERES:int = 0;
-		private const SPHERES_CUBES : int = 1;
+		// Starling instances
+		private var starlingCheckerboard:Starling;
+				
+		// Constants
+		private const CHECKERS_CUBES:int = 0;
+		private const CUBES_CHECKERS : int = 1;
 		
 		/**
 		 * Constructor
 		 */
-		public function Simple_Away3D_Layers_ManualRender()
+		public function Dynamic_Layer_Position_And_Size()
 		{
 			init();
 		}
@@ -131,11 +135,6 @@ package {
 			stage.align = StageAlign.TOP_LEFT;
 			
 			initProxies();
-			initAway3D();
-			initMaterials();
-			initObjects();
-			initButton();
-			initListeners();
 		}
 		
 		/**
@@ -148,33 +147,49 @@ package {
 
 			// Create a new Stage3D proxy to contain the separate views
 			stage3DProxy = stage3DManager.getFreeStage3DProxy();
+			stage3DProxy.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated);
 			stage3DProxy.antiAlias = 8;
-			stage3DProxy.color = 0x000000;
+			stage3DProxy.color = 0x0;
+			
+			s3DWidth = stage3DProxy.width;
+			s3DHeight = stage3DProxy.height;
 		}
 
+		private function onContextCreated(event : Stage3DEvent) : void {
+			initAway3D();
+			initStarling();
+			initMaterials();
+			initObjects();
+			initButton();
+			initListeners();
+		}
+
+	
 		/**
 		 * Initialise the Away3D views
 		 */
 		private function initAway3D() : void
 		{
 			// Create the first Away3D view which holds the cube objects.
-			away3dView1 = new View3D();
-			away3dView1.stage3DProxy = stage3DProxy;
-			away3dView1.shareContext = true;
+			away3dView = new View3D();
+			away3dView.stage3DProxy = stage3DProxy;
+			away3dView.shareContext = true;
 
-			hoverController = new HoverController(away3dView1.camera, null, 45, 30, 1200, 5, 89.999);
+			hoverController = new HoverController(away3dView.camera, null, 45, 30, 1200, 5, 89.999);
 			
-			addChild(away3dView1);
+			addChild(away3dView);
 			
-			addChild(new AwayStats(away3dView1));
-			
-			//Create the second Away3D view which holds the sphere objects
-			away3dView2 = new View3D();
-			away3dView2.camera.z = -2000;
-			away3dView2.stage3DProxy = stage3DProxy;
-			away3dView2.shareContext = true;
-			
-			addChild(away3dView2);
+			addChild(new AwayStats(away3dView));
+		}
+		
+		/**
+		 * Initialise the Starling sprites
+		 */
+		private function initStarling() : void
+		{
+			//Create the Starling scene to add the background wall/fireplace. This is positioned on top of the floor scene starting at the top of the screen. It slightly covers the wooden floor layer to avoid any gaps appearing.
+			starlingViewPort = stage3DProxy.viewPort.clone();
+			starlingCheckerboard = new Starling(StarlingCheckerboardSprite, stage, starlingViewPort, stage3DProxy.stage3D);
 		}
 
 		/**
@@ -183,26 +198,13 @@ package {
 		private function initMaterials() : void {
 			//Create a material for the cubes
 			var cubeBmd:BitmapData = new BitmapData(128, 128, false, 0x0);
-			cubeBmd.perlinNoise(7, 7, 5, 12345, true, true);
+			cubeBmd.perlinNoise(7, 7, 5, 12345, true, true, 7, true);
 			cubeMaterial = new TextureMaterial(new BitmapTexture(cubeBmd));
 			cubeMaterial.gloss = 20;
 			cubeMaterial.ambientColor = 0x808080;
 			cubeMaterial.ambient = 1;
-			
-			//Create a material for the spheres
-			var sphereBmd:BitmapData = new BitmapData(128, 128, false, 0x0);
-			sphereBmd.fillRect(new Rectangle(0, 0, 128, 128), 0xffffff);
-			sphereBmd.fillRect(new Rectangle(8, 8, 112, 112), 0x555555);
-			sphereMaterial = new TextureMaterial(new BitmapTexture(sphereBmd));
-			sphereMaterial.gloss = 20;
-			sphereMaterial.ambientColor = 0x808080;
-			sphereMaterial.ambient = 1;
-			sphereMaterial.repeat = true;
 		}
-
-		/**
-		 * Initialise the lights
-		 */
+		
 		private function initObjects() : void {
 			// Build the cubes for view 1
 			var cG:CubeGeometry = new CubeGeometry(300, 300, 300);
@@ -220,36 +222,14 @@ package {
 			cube1.y = cube2.y = cube3.y = cube4.y = cube5.y = 150;
 			
 			// Add the cubes to view 1
-			away3dView1.scene.addChild(cube1);
-			away3dView1.scene.addChild(cube2);
-			away3dView1.scene.addChild(cube3);
-			away3dView1.scene.addChild(cube4);
-			away3dView1.scene.addChild(cube5);
-			away3dView1.scene.addChild(new WireframePlane(2500, 2500, 20, 20, 0x77aaaa, 1.5, WireframePlane.ORIENTATION_XZ));
-			
-			var sG:SphereGeometry = new SphereGeometry(200);
-			sG.scaleUV(5, 5);
-			sphere1 = new Mesh(sG, sphereMaterial);
-			sphere2 = new Mesh(sG, sphereMaterial);
-			sphere3 = new Mesh(sG, sphereMaterial);
-			sphere4 = new Mesh(sG, sphereMaterial);
-			sphere5 = new Mesh(sG, sphereMaterial);
-
-			// Arrange them in a circle with one on the center
-			sphere1.x = -1000; 
-			sphere2.y = -1000;
-			sphere3.x = 1000;
-			sphere4.y = 1000;
-			
-			sphereContainer = new ObjectContainer3D();
-			sphereContainer.addChild(sphere1);
-			sphereContainer.addChild(sphere2);
-			sphereContainer.addChild(sphere3);
-			sphereContainer.addChild(sphere4);
-			sphereContainer.addChild(sphere5);
-			away3dView2.scene.addChild(sphereContainer);
+			away3dView.scene.addChild(cube1);
+			away3dView.scene.addChild(cube2);
+			away3dView.scene.addChild(cube3);
+			away3dView.scene.addChild(cube4);
+			away3dView.scene.addChild(cube5);
+			away3dView.scene.addChild(new WireframePlane(2500, 2500, 20, 20, 0xbbbb00, 1.5, WireframePlane.ORIENTATION_XZ));
 		}
-
+		
 		/**
 		 * Initialise the button to swap the rendering orders
 		 */
@@ -279,9 +259,10 @@ package {
 		 * Set up the rendering processing event listeners
 		 */
 		private function initListeners() : void {
-			addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 			addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+
+			stage3DProxy.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 		}
 
 		/**
@@ -293,31 +274,52 @@ package {
 				hoverController.panAngle = 0.3 * (stage.mouseX - lastMouseX) + lastPanAngle;
 				hoverController.tiltAngle = 0.3 * (stage.mouseY - lastMouseY) + lastTiltAngle;
 			}
-			
-			// Rotate view 2
-			sphereContainer.rotationZ += 0.5;
-			
-			// Clear the Context3D object
-			stage3DProxy.clear();
+
+			// Update the scenes
+			var starlingCheckerboardSprite:StarlingCheckerboardSprite = StarlingCheckerboardSprite.getInstance();
+			if (starlingCheckerboardSprite)
+				starlingCheckerboardSprite.update();
 			
 			// Use the selected rendering order
-			if (renderOrder == CUBES_SPHERES) {
-				// Render the Away3D layer 1
-				away3dView1.render();
+			if (renderOrder == CHECKERS_CUBES) {
+
+				// Render the Starling animation layer
+				starlingCheckerboard.nextFrame();
 				
-				// Render the Away3D layer 2
-				away3dView2.render();
+				// Render the Away3D layer
+				away3dView.render();
+
 			} else {
-				// Render the Away3D layer 2
-				away3dView2.render();
-				
-				// Render the Away3D layer 1
-				away3dView1.render();
+
+				// Render the Away3D layer
+				away3dView.render();
+
+				// Render the Starling animation layer
+				starlingCheckerboard.nextFrame();
 			}
 			
-			// Present the Context3D object to Stage3D
-			stage3DProxy.present();
-			
+			// Reposition the Away3D view layer
+			var a3DPosRatio:Number = 0.125 + (Math.sin(counter * 0.01) * 0.125);
+			away3dView.x = s3DWidth * a3DPosRatio;
+			away3dView.y = s3DHeight * a3DPosRatio;
+
+			// Resize the Away3D view layer
+			var a3DSizeRatio:Number = 0.5 + (Math.sin(counter * 0.01) * 0.25);
+			away3dView.width = s3DWidth * a3DSizeRatio;
+			away3dView.height = s3DHeight * a3DSizeRatio;
+
+			// Reposition the Starling layer
+			var sXPosRatio:Number = 0.125 + (Math.sin(-counter * 0.01) * 0.125);
+			var sYPosRatio:Number = 0.5 + (Math.sin(-counter * 0.02) * 0.5);
+			starlingViewPort.x = s3DWidth * sXPosRatio;
+			starlingViewPort.y = (s3DHeight-200) * sYPosRatio;
+
+			// Resize the Away3D Starling layer
+			var sSizeRatio:Number = 0.75 + (Math.sin(counter * 0.01) * 0.25);
+			starlingViewPort.width = s3DWidth * sSizeRatio;
+			starlingViewPort.height = 200;
+
+			counter++;
 		}
 
 		/**
@@ -342,8 +344,8 @@ package {
 		 * Swap the rendering order 
 		 */
 		private function onChangeRenderOrder(event : MouseEvent) : void {
-			renderOrder = (renderOrder == CUBES_SPHERES) ? SPHERES_CUBES : CUBES_SPHERES;
-			
+			renderOrder = (renderOrder == CHECKERS_CUBES) ? CUBES_CHECKERS : CHECKERS_CUBES;
+ 			
 			updateRenderDesc();
 		}		
 
@@ -351,13 +353,13 @@ package {
 		 * Change the text describing the rendering order
 		 */
 		private function updateRenderDesc() : void {
-			var txt:String = "Demo of rendering two Away3D View3D instances using the Stage3DManager & Stage3DProxy\n";
-			txt += "framework integration code. One view3D has uses HoverController whilst the other camera is fixed.\n";
-			txt += "Due to depth testing, both views are combined, irrespective or render ordering\n";
-			txt += "EnterFrame event is attached to the 'stage' - clear()/present() need to be included in the handler\n\n";
+			var txt:String = "Demo of integrating two framework layers onto a stage3D instance. This demonstrates the\n";
+			txt += "resizing and positioning of layers. Click the button to the left to swap the layers around.\n";
+			txt += "EnterFrame is attached to the Stage3DProxy - clear()/present() are handled automatically\n";
+			txt += "Mouse down and drag to rotate the Away3D scene.\n\n";
 			switch (renderOrder) {
-				case CUBES_SPHERES : txt += "Render Order (first:behind to last:in-front) : Cubes > Spheres"; break;
-				case SPHERES_CUBES : txt += "Render Order (first:behind to last:in-front) : Spheres > Cubes"; break;
+				case CHECKERS_CUBES : txt += "Render Order (first:behind to last:in-front) : Checkers > Cubes"; break;
+				case CUBES_CHECKERS : txt += "Render Order (first:behind to last:in-front) : Cubes > Checkers"; break;
 			}
 			renderOrderDesc.text = txt;
 		}

@@ -225,7 +225,7 @@ package {
 			away3dView1.scene.addChild(cube3);
 			away3dView1.scene.addChild(cube4);
 			away3dView1.scene.addChild(cube5);
-			//away3dView1.scene.addChild(new WireframePlane(20, 2500, 1.5, 0xaa7700));
+			away3dView1.scene.addChild(new WireframePlane(2500, 2500, 20, 20, 0x77aaaa, 1.5, WireframePlane.ORIENTATION_XZ));
 			
 			// Build the spheres for view 2
 			var sG:SphereGeometry = new SphereGeometry(200);

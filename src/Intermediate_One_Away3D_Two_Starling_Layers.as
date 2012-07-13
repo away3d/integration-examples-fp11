@@ -219,7 +219,7 @@ package {
 			away3dView.scene.addChild(cube3);
 			away3dView.scene.addChild(cube4);
 			away3dView.scene.addChild(cube5);
-			//away3dView.scene.addChild(new WireframePlane(20, 2500, 1.5, 0xbbbb00));
+			away3dView.scene.addChild(new WireframePlane(2500, 2500, 20, 20, 0xbbbb00, 1.5, WireframePlane.ORIENTATION_XZ));
 		}
 		
 		/**
