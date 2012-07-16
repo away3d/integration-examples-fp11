@@ -93,7 +93,7 @@ starling.rootsprites{
 		public function updateScene():void
 		{
 			// Scroll the text
-			_text.y -= 10;
+			_text.y -= 6;
 			if (_text.y < -768) _text.y = 0;
 
 			// Rotate the HUD components
