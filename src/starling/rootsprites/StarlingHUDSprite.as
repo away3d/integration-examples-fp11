@@ -66,9 +66,12 @@ starling.rootsprites{
 			var hud:Texture = Texture.fromBitmap(new HUDImage());
 			var text:Texture = Texture.fromBitmap(new TextImage());
 
-			addChild(new Image(hud));
+			var border : Image = new Image(hud);
+			border.alpha = 0.5;
+			addChild(border);
 
 			_text = new ClippedSprite();
+			_text.alpha = 0.5;
 			_text.addChild(new Image(text));
 
 			var textContainer:ClippedSprite = new ClippedSprite();
@@ -79,12 +82,14 @@ starling.rootsprites{
 
 			var inner:Texture = Texture.fromBitmap(new InnerImage());
 			_inner = new Sprite();
+			_inner.alpha = 0.4;
 			_inner.x = _inner.y = _inner.pivotX = _inner.pivotY = 128;
 			_inner.addChild(new Image(inner));
 			addChild(_inner);
 
 			var outer:Texture = Texture.fromBitmap(new OuterImage());
 			_outer = new Sprite();
+			_outer.alpha = 0.2;
 			_outer.x = _outer.y = _outer.pivotX = _outer.pivotY = 128;
 			_outer.addChild(new Image(outer));
 			addChild(_outer);
