@@ -518,7 +518,7 @@ package
 			// Update the attack sphere
 			attackSphere.x -= 10;
 			if (attackSphere.x <= 40) {
-				attackSphere.x = 300;
+				attackSphere.x = 800;
 				hudShield.scaleX = hudShield.scaleY = 1.25;
 				starlingImpactSprite = StarlingImpactEffectSprite.getInstance();
 				if (starlingImpactSprite)
