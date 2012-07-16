@@ -92,6 +92,8 @@ package
 		private var WoodFloorImage:Class;
 		[Embed(source="../embeds/shield.3ds", mimeType="application/octet-stream")]
 		private var ShieldMesh:Class;
+		[Embed(source="../embeds/hudparticle.png")]
+		private var HudParticle:Class;
 		
 		// Stage manager and Stage3D instance proxy classes 
 		private var stage3DManager:Stage3DManager;
@@ -126,7 +128,7 @@ package
 		private var hellKnightMaterial:TextureMaterial;
 		private var sphereMaterial:TextureMaterial;
 		private var cubeMaterial:TextureMaterial;
-		private var ballMaterial:TextureMaterial;
+		private var hudSpriteMaterial:TextureMaterial;
 		
 		// Away3D scene objects
 		private var _mesh:Mesh;
@@ -341,14 +343,9 @@ package
 			cubeMaterial.shadowMethod = hudShadowMethod;
 			
 			// Create a material for the HUD balls
-			var red:BitmapData = new BitmapData(128, 128, false, 0x0000ff);
-			ballMaterial = new TextureMaterial(new BitmapTexture(red));
-			ballMaterial.gloss = 50;
-			ballMaterial.ambientColor = 0xffffff;
-			ballMaterial.ambient = 10;
-			ballMaterial.lightPicker = hudLightPicker;
-			//ballMaterial.shadowMethod = hudShadowMethod;
-
+			var particle:BitmapData = Bitmap(new HudParticle).bitmapData;
+			hudSpriteMaterial = new TextureMaterial(new BitmapTexture(particle));
+			hudSpriteMaterial.alphaBlending = true;
 		}
 		
 		/**
@@ -386,22 +383,22 @@ package
 			away3dView2.scene.addChild(hudShield);
 			
 			
-			//build the HUD balls
-			var s:Mesh;
+			//build the HUD particles
+			var s : Sprite3D;
 			
-			s = new Mesh(new SphereGeometry(35), ballMaterial);
+			s = new Sprite3D(hudSpriteMaterial, 70, 70);
 			s.x = 350;
 			hudContainer1 = new ObjectContainer3D();
 			hudContainer1.addChild(s);
 			away3dView2.scene.addChild(hudContainer1);
 
-			s = new Mesh(new SphereGeometry(35), ballMaterial);
+			s = new Sprite3D(hudSpriteMaterial, 70, 70);
 			s.y = 350;
 			hudContainer2 = new ObjectContainer3D();
 			hudContainer2.addChild(s);
 			away3dView2.scene.addChild(hudContainer2);
 
-			s = new Mesh(new SphereGeometry(35), ballMaterial);
+			s = new Sprite3D(hudSpriteMaterial, 70, 70);
 			s.z = 350;
 			hudContainer3 = new ObjectContainer3D();
 			hudContainer3.addChild(s);
