@@ -546,7 +546,7 @@ package
 		 */
 		private function onEnterFrameStage3DProxy(event:Event):void
 		{
-			hudShield.rotationY = 10 * Math.sin(getTimer() * 0.001);
+			hudShield.rotationY = 20 * Math.sin(getTimer() * 0.001);
 			hudShield.scaleX = hudShield.scaleY += (1-hudShield.scaleY) * 0.1;
 
 			hudContainer1.rotationX -= 2.75;
