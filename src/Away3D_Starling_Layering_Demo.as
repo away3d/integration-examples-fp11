@@ -229,8 +229,6 @@ package
 			
 			addChild(away3dView1);
 			
-			addChild(new AwayStats(away3dView1));
-			
 			//Create the second Away3D view which holds the spinning cubes
 			away3dView2 = new View3D();
 			away3dView2.stage3DProxy = stage3DProxy2;
@@ -238,6 +236,8 @@ package
 			away3dView2.width = away3dView2.height = 160;
 			
 			addChild(away3dView2);
+			
+			addChild(new AwayStats(away3dView1, true, true));
 		}
 				
 		/**
