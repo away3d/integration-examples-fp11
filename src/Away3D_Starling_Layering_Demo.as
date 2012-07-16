@@ -562,9 +562,6 @@ package
 			hudContainer3.rotationY -= 1.1;
 			hudContainer3.rotationZ += 4.6;
 			
-			//render the backgroud Away3D layer
-			away3dView2.render();
-			
 			//update the Starling HUD foreground (2D scrolling text)
 			starlingHUDSprite = StarlingHUDSprite.getInstance();
 			if (starlingHUDSprite)
@@ -572,6 +569,9 @@ package
 			
 			//render the foreground Starling layer
 			starlingHUDScene.nextFrame();
+			
+			//render the backgroud Away3D layer
+			away3dView2.render();
 		}
 		
 		/**
