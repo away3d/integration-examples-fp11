@@ -439,7 +439,7 @@ package
 			ct = new BitmapCubeTexture(bmp, bmp, bmp, bmp, bmp, bmp);
 			env = new EnvMapMethod(ct, 0.5);
 			
-			mtl = new ColorMaterial(0x884400);
+			mtl = new ColorMaterial(0xff8800);
 			mtl.lightPicker = hudLightPicker;
 			mtl.addMethod(env);
 			
