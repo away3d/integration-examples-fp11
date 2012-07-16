@@ -76,7 +76,7 @@ starling.rootsprites{
 
 			var textContainer:ClippedSprite = new ClippedSprite();
 			textContainer.x = textContainer.y = 0;
-			textContainer.clipRect = new Rectangle(0, 10, 236, 236);
+			textContainer.clipRect = new Rectangle(0, 10, 140, 140);
 			textContainer.addChild(_text);
 			addChild(textContainer);
 
