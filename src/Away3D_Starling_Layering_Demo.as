@@ -47,16 +47,17 @@ THE SOFTWARE.
  */
 package
 {
-	import away3d.animators.data.Skeleton;
 	import away3d.animators.*;
+	import away3d.animators.data.Skeleton;
 	import away3d.containers.*;
 	import away3d.core.managers.*;
 	import away3d.debug.*;
-	import away3d.events.*;
 	import away3d.entities.*;
+	import away3d.events.*;
 	import away3d.library.*;
 	import away3d.library.assets.*;
 	import away3d.lights.*;
+	import away3d.loaders.Loader3D;
 	import away3d.loaders.parsers.*;
 	import away3d.materials.*;
 	import away3d.materials.lightpickers.*;
@@ -69,7 +70,7 @@ package
 	import flash.events.*;
 	import flash.geom.*;
 	import flash.utils.*;
-
+	
 	import starling.core.*;
 	import starling.rootsprites.*;
 
@@ -88,6 +89,8 @@ package
 		private var HellknightWalkAnim:Class;
 		[Embed(source="../embeds/woodfloor.jpg")]
 		private var WoodFloorImage:Class;
+		[Embed(source="../embeds/shield.3ds", mimeType="application/octet-stream")]
+		private var ShieldMesh:Class;
 		
 		// Stage manager and Stage3D instance proxy classes 
 		private var stage3DManager:Stage3DManager;
@@ -132,7 +135,7 @@ package
 		private var floorPlane:Mesh;
 		private var attackSphere:Mesh;
 		private var sphereContainer:ObjectContainer3D;
-		private var hudCube:Mesh;
+		private var hudShield:Loader3D;
 		private var hudContainer1:ObjectContainer3D;
 		private var hudContainer2:ObjectContainer3D;
 		private var hudContainer3:ObjectContainer3D;
@@ -369,12 +372,18 @@ package
 			away3dView1.scene.addChild(sphereContainer);
 			
 			// Load the monster mesh
-			AssetLibrary.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
+			AssetLibrary.addEventListener(AssetEvent.ASSET_COMPLETE, onMonsterAssetComplete);
 			AssetLibrary.loadData(new HellknightMesh(), null, null, new MD5MeshParser());
 			
 			// Build the HUD cube
-			hudCube = new Mesh(new CubeGeometry(400, 400, 400), cubeMaterial);
-			away3dView2.scene.addChild(hudCube);
+			//hudCube = new Mesh(new CubeGeometry(400, 400, 400), cubeMaterial);
+			//away3dView2.scene.addChild(hudCube);
+			Loader3D.enableParser(Max3DSParser);
+			hudShield = new Loader3D(false);
+			hudShield.addEventListener(AssetEvent.MESH_COMPLETE, onShieldMeshComplete);
+			hudShield.loadData(ShieldMesh);
+			away3dView2.scene.addChild(hudShield);
+			
 			
 			//build the HUD balls
 			var s:Mesh;
@@ -417,10 +426,18 @@ package
 			onResize();
 		}
 		
+		
+		private function onShieldMeshComplete(event:AssetEvent):void
+		{
+			var mesh : Mesh = Mesh(event.asset);
+			
+			mesh.material = new ColorMaterial(0xffcc00);
+		}
+		
 		/* 
 		 * Process the asset loading for the monster mesh and animations
 		 */
-		private function onAssetComplete(event:AssetEvent):void
+		private function onMonsterAssetComplete(event:AssetEvent):void
 		{
 			if (event.asset.assetType == AssetType.MESH) {
 				_mesh = event.asset as Mesh;
@@ -513,10 +530,7 @@ package
 		 */
 		private function onEnterFrameStage3DProxy(event:Event):void
 		{
-			// Update the Away3D HUD background (3D cube)
-			hudCube.rotationX += 1.1;
-			hudCube.rotationY += 2.19;
-			hudCube.rotationZ += 1.37;
+			hudShield.rotationY += 2.19;
 
 			hudContainer1.rotationX -= 2.75;
 			hudContainer1.rotationY += 4.38;
