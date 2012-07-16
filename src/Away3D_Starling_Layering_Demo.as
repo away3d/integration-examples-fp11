@@ -522,6 +522,7 @@ package
 			attackSphere.x -= 10;
 			if (attackSphere.x <= 40) {
 				attackSphere.x = 300;
+				hudShield.scaleX = hudShield.scaleY = 1.25;
 				starlingImpactSprite = StarlingImpactEffectSprite.getInstance();
 				if (starlingImpactSprite)
 					starlingImpactSprite.fireUp();
@@ -548,7 +549,8 @@ package
 		 */
 		private function onEnterFrameStage3DProxy(event:Event):void
 		{
-			hudShield.rotationY += 2.19;
+			hudShield.rotationY += 1.5;
+			hudShield.scaleX = hudShield.scaleY += (1-hudShield.scaleY) * 0.1;
 
 			hudContainer1.rotationX -= 2.75;
 			hudContainer1.rotationY += 4.38;
