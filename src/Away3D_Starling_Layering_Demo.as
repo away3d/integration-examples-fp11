@@ -200,8 +200,8 @@ package
 			stage3DProxy2.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated);
 			stage3DProxy2.color = 0x000000;
 			stage3DProxy2.y = 5;
-			stage3DProxy2.width = 256;
-			stage3DProxy2.height = 256;
+			stage3DProxy2.width = 160;
+			stage3DProxy2.height = 160;
 		}
 		
 		/**
@@ -235,7 +235,7 @@ package
 			away3dView2 = new View3D();
 			away3dView2.stage3DProxy = stage3DProxy2;
 			away3dView2.shareContext = true;
-			away3dView2.width = away3dView2.height = 256;
+			away3dView2.width = away3dView2.height = 160;
 			
 			addChild(away3dView2);
 		}
@@ -583,7 +583,7 @@ package
 			stage3DProxy1.width = stage.stageWidth;
 			stage3DProxy1.height = 600*stage.stageWidth/800;
 			
-			stage3DProxy2.x = stage.stageWidth - 261;
+			stage3DProxy2.x = stage.stageWidth - 165;
 		}
 		
 		/**
