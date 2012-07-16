@@ -207,6 +207,9 @@ package
 			if (event.currentTarget == stage3DProxy1) s3DProxy1hasContext = true;
 			if (event.currentTarget == stage3DProxy2) s3DProxy2hasContext = true;
 			if (s3DProxy1hasContext && s3DProxy2hasContext) initScenes();
+			
+			// Dispatch dummy resize to position all elements
+			stage.dispatchEvent(new Event(Event.RESIZE));
 		}		 
 		
 		/**
@@ -537,9 +540,6 @@ package
 			
 			//render the foreground Starling layer
 			starlingHUDScene.nextFrame();
-			
-			//update the HUD position
-			stage3DProxy2.x = 340 + 200*Math.sin(0.04*sinCount++);
 		}
 		
 		/**
@@ -550,6 +550,8 @@ package
 			// Scale monster Stage3D proxy to maintain aspect ratio but fill stage width
 			stage3DProxy1.width = stage.stageWidth;
 			stage3DProxy1.height = 600*stage.stageWidth/800;
+			
+			stage3DProxy2.x = stage.stageWidth - 261;
 		}
 		
 		/**
