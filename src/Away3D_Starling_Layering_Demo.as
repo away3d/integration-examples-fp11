@@ -64,6 +64,7 @@ package
 	import away3d.materials.methods.*;
 	import away3d.primitives.*;
 	import away3d.textures.*;
+	import away3d.tools.commands.Weld;
 	import away3d.utils.*;
 	
 	import flash.display.*;
@@ -430,8 +431,25 @@ package
 		private function onShieldMeshComplete(event:AssetEvent):void
 		{
 			var mesh : Mesh = Mesh(event.asset);
+			var mtl : ColorMaterial;
+			var bmp : BitmapData;
+			var ct : BitmapCubeTexture;
+			var env : EnvMapMethod;
 			
-			mesh.material = new ColorMaterial(0xffcc00);
+			bmp = new BitmapData(256, 256, false, 0);
+			bmp.perlinNoise(200, 200, 2, 0, true, false, 7, true);
+			
+			ct = new BitmapCubeTexture(bmp, bmp, bmp, bmp, bmp, bmp);
+			env = new EnvMapMethod(ct, 0.5);
+			
+			mtl = new ColorMaterial(0x884400);
+			mtl.lightPicker = hudLightPicker;
+			mtl.addMethod(env);
+			
+			Weld.apply(mesh, true, false);
+			
+			mesh.material = mtl;
+			mesh.scale(2);
 		}
 		
 		/* 
