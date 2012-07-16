@@ -46,7 +46,7 @@ starling.rootsprites{
 		[Embed(source = "../embeds/wall.jpg")]
 		private static const WallImage:Class;
 		
-		[Embed(source = "../embeds/wallfire.gif")]
+		[Embed(source = "../embeds/wallfire.png")]
 		private static const FireplaceImage:Class;
 		
 		[Embed(source = "../embeds/wallfireback.jpg")]
