@@ -3,20 +3,19 @@ Framework Integration Example
 
 Demonstrates :
 
-An advanced example of multiple frameworks being layered together on multiple
-stage3D/context3D instances via the Stage3DProxy class. This is and extreme example
-using two Stage3DProxies. The first Stage3DProxy instance contains a scrolling background
+An advanced example of multiple frameworks being layered on separate stage3d/context3d 
+instances via the Stage3DProxy class. The first stage3d instance is a scrolling 
 wall using the Starling framework with a particle based fire. Layered on top of this is 
 an Away3D View3D instance containing an animated MD5 model casting a shadow onto a floor 
 plane. Also in the same View3D a sphere continually impacts the MD5 model which triggers
 a particle effect in a secondary Starling layer on top of the View3D layer. 
 
-The second Stage3DProxy instance is overlayed on the first instance and acts like a HUD.
-It has a smaller size than the stage and is also repositioned on the stage during the
-demo. It has a View3D layer containing rotating cube with spheres rotating around it and
-a Starling layer overlayed showing some scrolling text and rotating bitmaps.
+The second stage3d instance is on top of the first and is a HUD like display. It has 
+a smaller size than the stage and is positioned to one side of the stage during the
+demo. It has a Starling layer showing some scrolling text and rotating bitmaps and
+a View3D layer overlayed containing a shield with spheres rotating around it.
  
-Code by Greg Caldwell & Rob Bateman
+Code by Greg Caldwell, Rob Bateman & Richard Olsson
 greg@geepers.co.uk
 http://www.geepers.co.uk
 rob@infiniteturtles.co.uk
@@ -47,6 +46,7 @@ THE SOFTWARE.
  */
 package
 {
+	import flash.net.URLRequest;
 	import away3d.animators.*;
 	import away3d.animators.data.Skeleton;
 	import away3d.containers.*;
@@ -55,7 +55,6 @@ package
 	import away3d.entities.*;
 	import away3d.events.*;
 	import away3d.library.*;
-	import away3d.library.assets.*;
 	import away3d.lights.*;
 	import away3d.loaders.Loader3D;
 	import away3d.loaders.parsers.*;
@@ -78,16 +77,6 @@ package
 	[SWF(width="800", height="600", frameRate="60")]
 	public class Away3D_Starling_Layering_Demo extends Sprite
 	{
-		[Embed(source="../embeds/hellknight.jpg")]
-		private var HellknightDiffuse:Class;
-		[Embed(source="../embeds/hellknight_local.png")]
-		private var HellknightNormal:Class;
-		[Embed(source="../embeds/hellknight_s.png")]
-		private var HellknightSpecular:Class;
-		[Embed(source="../embeds/hellknight.md5mesh", mimeType="application/octet-stream")]
-		private var HellknightMesh:Class;
-		[Embed(source="../embeds/walk7.md5anim", mimeType="application/octet-stream")]
-		private var HellknightWalkAnim:Class;
 		[Embed(source="../embeds/woodfloor.jpg")]
 		private var WoodFloorImage:Class;
 		[Embed(source="../embeds/shield.3ds", mimeType="application/octet-stream")]
@@ -99,8 +88,8 @@ package
 		private var stage3DManager:Stage3DManager;
 		private var stage3DProxy1:Stage3DProxy;
 		private var stage3DProxy2:Stage3DProxy;
-		private var s3DProxy1hasContext : Boolean = false;
-		private var s3DProxy2hasContext : Boolean = false;
+		private var s3DProxy1HasContext : Boolean = false;
+		private var s3DProxy2HasContext : Boolean = false;
 		
 		// Away3D engine variables
 		private var away3dView1:View3D;
@@ -125,19 +114,22 @@ package
 		
 		// Away3D material objects
 		private var floorMaterial:TextureMaterial;
-		private var hellKnightMaterial:TextureMaterial;
+		private var characterMaterial:TextureMaterial;
 		private var sphereMaterial:TextureMaterial;
 		private var cubeMaterial:TextureMaterial;
 		private var hudSpriteMaterial:TextureMaterial;
 		
 		// Away3D scene objects
-		private var _mesh:Mesh;
-		private var _skeleton:Skeleton;
-		private var _animationSet:SkeletonAnimationSet;
-		private var _animator:SkeletonAnimator;
+		private var MESH_URL:String = "MaxAWDWorkflow.awd";
+		private var TEXTURE_URL:String = "onkba_N.jpg";
+		private var characterMesh:Mesh;
+		private var skeleton:Skeleton;
+		private var animationSet:SkeletonAnimationSet;
+		private var animator:SkeletonAnimator;
 		private var floorPlane:Mesh;
 		private var attackSphere:Mesh;
 		private var sphereContainer:ObjectContainer3D;
+		private var hudContainer : ObjectContainer3D;
 		private var hudShield:Loader3D;
 		private var hudContainer1:ObjectContainer3D;
 		private var hudContainer2:ObjectContainer3D;
@@ -149,9 +141,11 @@ package
 		private var starlingHUDSprite:StarlingHUDSprite;
 		
 		// Runtime variables
-		private var sinCount:Number = 0;
-		private var activeHUD : Boolean = false;
-		private var startTime:Number;
+		private var startTime : Number;
+		private var walkState : SkeletonAnimationState;
+		private var modelTexture : BitmapTexture;
+		private var assetsThatAreloaded : Number = 0;
+		private var assetsToLoad : Number = 2;
 		
 				
 		/**
@@ -175,6 +169,9 @@ package
 			initProxies();
 		}
 		
+		/**
+		 * Initialise the rest of the scene when the context is available
+		 */
 		private function initScenes():void {
 			initAway3D();
 			initStarling();
@@ -192,16 +189,16 @@ package
 			// Define a new Stage3DManager for the Stage3D objects
 			stage3DManager = Stage3DManager.getInstance(stage);
 
-			// Create a new Stage3D proxy for the first Stage3D object
+			// Create a new Stage3D proxy for the first Stage3D scene
 			stage3DProxy1 = stage3DManager.getFreeStage3DProxy();
 			stage3DProxy1.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated);
 			stage3DProxy1.color = 0x000000;
 
-			// Create a new Stage3D proxy for the second Stage3D object
+			// Create a new Stage3D proxy for the second Stage3D scene
 			stage3DProxy2 = stage3DManager.getFreeStage3DProxy();
 			stage3DProxy2.addEventListener(Stage3DEvent.CONTEXT3D_CREATED, onContextCreated);
 			stage3DProxy2.color = 0x000000;
-			stage3DProxy2.y = 5;
+			stage3DProxy2.y = 10;
 			stage3DProxy2.width = 160;
 			stage3DProxy2.height = 160;
 		}
@@ -210,9 +207,9 @@ package
 		 * Wait until both stage3DProxy instances have a Context3D
 		 */
 		private function onContextCreated(event : Stage3DEvent) : void {
-			if (event.currentTarget == stage3DProxy1) s3DProxy1hasContext = true;
-			if (event.currentTarget == stage3DProxy2) s3DProxy2hasContext = true;
-			if (s3DProxy1hasContext && s3DProxy2hasContext) initScenes();
+			if (event.currentTarget == stage3DProxy1) s3DProxy1HasContext = true;
+			if (event.currentTarget == stage3DProxy2) s3DProxy2HasContext = true;
+			if (s3DProxy1HasContext && s3DProxy2HasContext) initScenes();
 			
 			// Dispatch dummy resize to position all elements
 			stage.dispatchEvent(new Event(Event.RESIZE));
@@ -231,7 +228,7 @@ package
 			
 			addChild(away3dView1);
 			
-			//Create the second Away3D view which holds the spinning cubes
+			//Create the second Away3D view which holds the shield HUD
 			away3dView2 = new View3D();
 			away3dView2.stage3DProxy = stage3DProxy2;
 			away3dView2.shareContext = true;
@@ -249,13 +246,16 @@ package
 		{		
 			//Create the Starling scene to add the background wall/fireplace. This is positioned on top of the floor scene starting at the top of the screen. It slightly covers the wooden floor layer to avoid any gaps appearing.
 			starlingWallScene = new Starling(StarlingWallSprite, stage, stage3DProxy1.viewPort, stage3DProxy1.stage3D);
+			StarlingWallSprite.getInstance().touchable = false;
 			
 			// Create the Starling scene that shows the foreground ball impact particle effect. This appears in front of all the other layers.
 			starlingImpactScene = new Starling(StarlingImpactEffectSprite, stage, stage3DProxy1.viewPort, stage3DProxy1.stage3D);
+			StarlingImpactEffectSprite.getInstance().touchable = false;
 			
 		 	//Create the Starling scene that shows the foreground ball impact particle effect. This appears in front of all the other layers.
-		 	var viewRect:Rectangle = new Rectangle(0, 0, 256, 256);
+		 	var viewRect:Rectangle = new Rectangle(0, 0, 160, 160);
 			starlingHUDScene = new Starling(StarlingHUDSprite, stage, viewRect, stage3DProxy2.stage3D);
+			StarlingHUDSprite.getInstance().touchable = false;
 		}
 		
 		/**
@@ -281,6 +281,10 @@ package
 			//create the light picker for the fire light
 			fireLightPicker = new StaticLightPicker([fireLight]);
 			
+			// Create a container for the entire HUD to help reposition in the scene
+			hudContainer = new ObjectContainer3D();
+			away3dView2.scene.addChild(hudContainer);
+			
 			//create the hud light
 			hudLightLocation = new Vector3D(-465.5, -130, 200);
 			hudLight = new DirectionalLight();
@@ -291,7 +295,7 @@ package
 			hudLight.direction = hudLightLocation;
 			
 			//add the hud light to the HUD Away3D scene
-			away3dView2.scene.addChild(hudLight);
+			hudContainer.scene.addChild(hudLight);
 			
 			//create the hud light shadow method
 			hudShadowMethod = new TripleFilteredShadowMapMethod(hudLight);
@@ -314,17 +318,6 @@ package
 			floorMaterial.specularMap = new BitmapTexture(new BitmapData(128, 128, false, 0xffffffff));
 			floorMaterial.repeat = true;
 			floorMaterial.shadowMethod = fireShadowMethod;
-
-			// Create a material for the monster
-			hellKnightMaterial = new TextureMaterial(Cast.bitmapTexture(HellknightDiffuse));
-			hellKnightMaterial.gloss = 20;
-			hellKnightMaterial.ambientColor = 0x505060;
-			hellKnightMaterial.ambient = 5;
-			hellKnightMaterial.specular = 1.3;
-			hellKnightMaterial.normalMap = Cast.bitmapTexture(HellknightNormal);
-			hellKnightMaterial.specularMap = Cast.bitmapTexture(HellknightSpecular);
-			hellKnightMaterial.lightPicker = fireLightPicker;
-			//hellKnightMaterial.shadowMethod = fireShadowMethod;
 			
 			// Create a material for the sphere
 			sphereMaterial = new TextureMaterial(new BitmapTexture(new BitmapData(16, 16, false, 0x80c0ff)));
@@ -362,27 +355,28 @@ package
 			//build the attack sphere
 			attackSphere = new Mesh(new SphereGeometry(15), sphereMaterial);
 			attackSphere.x = 600;
-			attackSphere.y = -80;
+			attackSphere.y = -40;
 			
 			// Build a container for the ball animation
 			sphereContainer = new ObjectContainer3D();
 			sphereContainer.addChild(attackSphere);
 			away3dView1.scene.addChild(sphereContainer);
 			
-			// Load the monster mesh
-			AssetLibrary.addEventListener(AssetEvent.ASSET_COMPLETE, onMonsterAssetComplete);
-			AssetLibrary.loadData(new HellknightMesh(), null, null, new MD5MeshParser());
+			// Load the character mesh
+			AssetLibrary.enableParser(AWD2Parser);
+			AssetLibrary.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
+			AssetLibrary.addEventListener(LoaderEvent.RESOURCE_COMPLETE, onCharacterResourceComplete);
+			AssetLibrary.addEventListener(LoaderEvent.LOAD_ERROR, onLoadError);
+			AssetLibrary.load(new URLRequest(TEXTURE_URL));
+			AssetLibrary.load(new URLRequest(MESH_URL));
 			
 			// Build the HUD cube
-			//hudCube = new Mesh(new CubeGeometry(400, 400, 400), cubeMaterial);
-			//away3dView2.scene.addChild(hudCube);
 			Loader3D.enableParser(Max3DSParser);
 			hudShield = new Loader3D(false);
 			hudShield.addEventListener(AssetEvent.MESH_COMPLETE, onShieldMeshComplete);
 			hudShield.loadData(ShieldMesh);
-			away3dView2.scene.addChild(hudShield);
-			
-			
+			hudContainer.addChild(hudShield);
+				
 			//build the HUD particles
 			var s : Sprite3D;
 			
@@ -390,19 +384,34 @@ package
 			s.x = 350;
 			hudContainer1 = new ObjectContainer3D();
 			hudContainer1.addChild(s);
-			away3dView2.scene.addChild(hudContainer1);
+			hudContainer.addChild(hudContainer1);
 
 			s = new Sprite3D(hudSpriteMaterial, 70, 70);
 			s.y = 350;
 			hudContainer2 = new ObjectContainer3D();
 			hudContainer2.addChild(s);
-			away3dView2.scene.addChild(hudContainer2);
+			hudContainer.addChild(hudContainer2);
 
 			s = new Sprite3D(hudSpriteMaterial, 70, 70);
 			s.z = 350;
 			hudContainer3 = new ObjectContainer3D();
 			hudContainer3.addChild(s);
-			away3dView2.scene.addChild(hudContainer3);
+			hudContainer.addChild(hudContainer3);
+		}
+
+		protected function onLoadError(event:LoaderEvent):void
+		{
+			trace("Error loading: " + event.url);
+		}
+		
+		/**
+		 * Listener function for asset complete event on loader
+		 */
+		private function onAssetComplete(event:AssetEvent):void
+		{
+			// To not see these names output in the console, comment the
+			// line below with two slash'es, just as you see on this line
+			trace("Loaded " + event.asset.name + " Name: " + event.asset.name);
 		}
 		
 		/**
@@ -410,13 +419,10 @@ package
 		 */
 		private function initListeners():void
 		{
-			// Mouse click listener to manage HUD rendering toggle
-			stage.addEventListener(MouseEvent.CLICK, onClick);
-			
 			// Enter frame listener to manage monster Stage3D rendering
 			stage.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			
-			// Enter frame listener to manage HUD Stage3D rendering
+			// Enter frame listener to manage monster Stage3D rendering
 			stage3DProxy2.addEventListener(Event.ENTER_FRAME, onEnterFrameStage3DProxy);
 			
 			// Resize listener to handle stage resize
@@ -425,6 +431,9 @@ package
 		}
 		
 		
+		/**
+		 * Initialise the shield and materials
+		 */
 		private function onShieldMeshComplete(event:AssetEvent):void
 		{
 			var mesh : Mesh = Mesh(event.asset);
@@ -450,50 +459,79 @@ package
 		}
 		
 		/* 
-		 * Process the asset loading for the monster mesh and animations
+		 * Ensure all the assets are loaded
 		 */
-		private function onMonsterAssetComplete(event:AssetEvent):void
+		private function onCharacterResourceComplete(event:LoaderEvent):void
 		{
-			if (event.asset.assetType == AssetType.MESH) {
-				_mesh = event.asset as Mesh;
-				_mesh.material = hellKnightMaterial;
-				_mesh.y = -150;
-				_mesh.rotationY = 90;
-				away3dView1.scene.addChild(_mesh);
-
-			} else if (event.asset.assetType == AssetType.SKELETON) {
-				_skeleton = event.asset as Skeleton;	
-			} else if (event.asset.assetType == AssetType.ANIMATION_SET) {
-				_animationSet = event.asset as SkeletonAnimationSet;
-				_animator = new SkeletonAnimator(_animationSet, _skeleton);
-				
-				//apply animator to mesh
-				_mesh.animator = _animator;
-				AssetLibrary.loadData(new HellknightWalkAnim(), null, "walk7", new MD5AnimParser());
-			} else if (event.asset.assetType == AssetType.ANIMATION_STATE) {
-				var state:SkeletonAnimationState = event.asset as SkeletonAnimationState;
-				var name : String = event.asset.assetNamespace;
-				_animationSet.addState(name, state);
-				_animator.play( name );
-				_animator.play("walk7");
+			assetsThatAreloaded++;
+			// check to see if we have all we need
+			if (assetsThatAreloaded == assetsToLoad) {
+				initCharacter();
 			}
 		}
 		
 		/**
-		 * Render loop for monster Stage3D proxy
+		 * Initialise the loaded character and materials
+		 */
+		private function initCharacter():void {			
+			// request all the things we loaded into the AssetLibrary
+			skeleton = Skeleton(AssetLibrary.getAsset("Bone001"));
+			walkState = SkeletonAnimationState(AssetLibrary.getAsset("Walk"));
+			modelTexture = BitmapTexture(AssetLibrary.getAsset(TEXTURE_URL));
+			characterMesh = Mesh(AssetLibrary.getAsset("ONKBA-Corps-lnew"));
+			
+			// Create a material for the character
+			var autoMap:Mapper = new Mapper(modelTexture.bitmapData);
+
+			characterMaterial = new TextureMaterial(modelTexture);
+			characterMaterial.normalMap = new BitmapTexture(autoMap.bitdata[1]);
+			characterMaterial.specularMap = new BitmapTexture(autoMap.bitdata[2]);
+			characterMaterial.gloss = 20;
+			characterMaterial.ambientColor = 0x807030;
+			characterMaterial.ambient = 5;
+			characterMaterial.specular = 1.3;
+			characterMaterial.lightPicker = fireLightPicker;
+			
+			// Set the size and position of the character
+			characterMesh.scale(1.75);
+			characterMesh.material = characterMaterial;
+			characterMesh.y = -70;
+			characterMesh.rotationY = 270;
+			characterMesh.castsShadows = true;
+			away3dView1.scene.addChild(characterMesh);
+
+			// Define the animation 
+			animationSet = new SkeletonAnimationSet(3);
+			animationSet.addState(walkState.name, walkState);
+			
+			animator = new SkeletonAnimator(animationSet, skeleton);
+			animator.updateRootPosition = false;
+				
+			//apply animator to mesh
+			characterMesh.animator = animator;
+
+			// Begin the animation
+			animator.play("Walk");
+		}
+		
+		/**
+		 * Update the character/wall/sphere/particle scene
 		 */
 		private function onEnterFrame(event:Event):void
 		{
+			// Clear the Context3D object
+			stage3DProxy1.clear();
+						
 			// Move the scene objects in line with the monster and use the location to synchronize other scene objects.
-			if (!_mesh) return;
+			if (!characterMesh) return;
 			
 			var syncWidth:Number = 110;
 			var lastPosition:Number = floorPlane.x;
-			
-			away3dView1.camera.x = sphereContainer.x = floorPlane.x = _mesh.x;
+			characterMesh.x += 4;
+			away3dView1.camera.x = sphereContainer.x = floorPlane.x = characterMesh.x;
 			
 			// Update the direction of the light to approximately coincide with the position of the fireplace (Starling scene)
-			fireLightLocation.x = -65 + ((_mesh.x * 0.105) % syncWidth);
+			fireLightLocation.x = -65 + ((characterMesh.x * 0.105) % syncWidth);
 			
 			// Apply light direction to Away3D light object with random jitter
 			fireLight.direction = fireLightLocation.add(new Vector3D(Math.random(), Math.random(), Math.random()));
@@ -503,30 +541,27 @@ package
 			fireLight.diffuse = fireLight.specular = intensity;
 			
 			// Vary the ambient value of the monster based on the light position
-			hellKnightMaterial.ambient = 7.5 + (intensity * 3);		
+			characterMaterial.ambient = 7.5 + (intensity * 3);		
 			
 			// (Away3D) Reposition the Wooden floor material offset (horizontal scrolling)
-			floorPlane.subMeshes[0].offsetU = _mesh.x / syncWidth * 0.85;
+			floorPlane.subMeshes[0].offsetU = characterMesh.x / syncWidth * 0.85;
 			
 			// Scroll the background Starling wall
 			starlingWallSprite = StarlingWallSprite.getInstance();
 			if (starlingWallSprite) {
-				starlingWallSprite.scrollWall((lastPosition - _mesh.x) * 1.475);
+				starlingWallSprite.scrollWall((lastPosition - characterMesh.x) * 1.475);
 				starlingWallSprite.glowIntensity = intensity;
 			}
 			
 			// Update the attack sphere
 			attackSphere.x -= 10;
-			if (attackSphere.x <= 40) {
+			if (attackSphere.x <= 20) {
 				attackSphere.x = 800;
 				hudShield.scaleX = hudShield.scaleY = 1.25;
 				starlingImpactSprite = StarlingImpactEffectSprite.getInstance();
 				if (starlingImpactSprite)
 					starlingImpactSprite.fireUp();
 			}
-			
-			// Clear the Context3D object
-			stage3DProxy1.clear();
 			
 			// Render the background Starling layer
 			starlingWallScene.nextFrame();
@@ -536,15 +571,15 @@ package
 			
 			// Render the foreground Starling layer
 			starlingImpactScene.nextFrame();
-			
+
 			// Present the Context3D object to Stage3D
 			stage3DProxy1.present();
 		}
 		
 		/**
-		 * Render loop for HUD Stage3D proxy
+		 * Update the HUD scene
 		 */
-		private function onEnterFrameStage3DProxy(event:Event):void
+		private function onEnterFrameStage3DProxy(event : Event):void
 		{
 			hudShield.rotationY = 20 * Math.sin(getTimer() * 0.001);
 			hudShield.scaleX = hudShield.scaleY += (1-hudShield.scaleY) * 0.1;
@@ -560,16 +595,16 @@ package
 			hudContainer3.rotationX += 2.5;
 			hudContainer3.rotationY -= 1.1;
 			hudContainer3.rotationZ += 4.6;
-			
+
 			//update the Starling HUD foreground (2D scrolling text)
 			starlingHUDSprite = StarlingHUDSprite.getInstance();
 			if (starlingHUDSprite)
 				starlingHUDSprite.updateScene();
-			
-			//render the foreground Starling layer
+								
+			//render the background Starling layer
 			starlingHUDScene.nextFrame();
 			
-			//render the backgroud Away3D layer
+			//render the foreground Away3D layer
 			away3dView2.render();
 		}
 		
@@ -578,25 +613,11 @@ package
 		 */
 		private function onResize(event:Event = null):void
 		{
-			// Scale monster Stage3D proxy to maintain aspect ratio but fill stage width
+			// Scale the Stage3D proxy to maintain aspect ratio but fill stage width
 			stage3DProxy1.width = stage.stageWidth;
 			stage3DProxy1.height = 600*stage.stageWidth/800;
-			
+
 			stage3DProxy2.x = stage.stageWidth - 165;
-		}
-		
-		/**
-		 * mouse listener for click events
-		 */
-		private function onClick(event:MouseEvent):void
-		{
-			activeHUD = !activeHUD;
-			
-			//toggle enterframe listener of HUD Stage3D proxy
-			if (activeHUD) 
-				stage3DProxy2.addEventListener(Event.ENTER_FRAME, onEnterFrameStage3DProxy);
-			else
-				stage3DProxy2.removeEventListener(Event.ENTER_FRAME, onEnterFrameStage3DProxy);
 		}
 	}
 }

@@ -43,7 +43,7 @@ starling.rootsprites{
 	{
 		[Embed(source = "../embeds/hud.png")]
 		private static const HUDImage:Class;
-		[Embed(source = "../embeds/text.gif")]
+		[Embed(source = "../embeds/text.png")]
 		private static const TextImage:Class;
 		[Embed(source = "../embeds/inner.png")]
 		private static const InnerImage:Class;
@@ -67,30 +67,25 @@ starling.rootsprites{
 			var text:Texture = Texture.fromBitmap(new TextImage());
 
 			var border : Image = new Image(hud);
-			border.alpha = 0.5;
 			addChild(border);
 
 			_text = new ClippedSprite();
-			_text.alpha = 0.5;
 			_text.addChild(new Image(text));
 
 			var textContainer:ClippedSprite = new ClippedSprite();
-			textContainer.x = textContainer.y = 0;
-			textContainer.clipRect = new Rectangle(0, 10, 140, 140);
+			textContainer.clipRect = new Rectangle(10, 10, 140, 140);
 			textContainer.addChild(_text);
 			addChild(textContainer);
 
 			var inner:Texture = Texture.fromBitmap(new InnerImage());
 			_inner = new Sprite();
-			_inner.alpha = 0.4;
-			_inner.x = _inner.y = _inner.pivotX = _inner.pivotY = 128;
+			_inner.x = _inner.y = _inner.pivotX = _inner.pivotY = 80;
 			_inner.addChild(new Image(inner));
 			addChild(_inner);
 
 			var outer:Texture = Texture.fromBitmap(new OuterImage());
 			_outer = new Sprite();
-			_outer.alpha = 0.2;
-			_outer.x = _outer.y = _outer.pivotX = _outer.pivotY = 128;
+			_outer.x = _outer.y = _outer.pivotX = _outer.pivotY = 80;
 			_outer.addChild(new Image(outer));
 			addChild(_outer);
 		}

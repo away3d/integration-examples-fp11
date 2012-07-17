@@ -62,7 +62,7 @@ package starling.rootsprites
 
 			mParticleSystem = new PDParticleSystem(psConfig, psTexture);
 			mParticleSystem.emitterX = 460;
-			mParticleSystem.emitterY = 430;
+			mParticleSystem.emitterY = 390;
 			mParticleSystem.maxCapacity = 75;
 			this.addChild(mParticleSystem);
 
