@@ -120,8 +120,8 @@ package
 		private var hudSpriteMaterial:TextureMaterial;
 		
 		// Away3D scene objects
-		private var MESH_URL:String = "MaxAWDWorkflow.awd";
-		private var TEXTURE_URL:String = "onkba_N.jpg";
+		private var MESH_URL:String = "assets/MaxAWDWorkflow.awd";
+		private var TEXTURE_URL:String = "assets/onkba_N.jpg";
 		private var characterMesh:Mesh;
 		private var skeleton:Skeleton;
 		private var animationSet:SkeletonAnimationSet;
