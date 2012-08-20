@@ -46,9 +46,9 @@ THE SOFTWARE.
  */
 package
 {
-	import flash.net.URLRequest;
 	import away3d.animators.*;
-	import away3d.animators.data.Skeleton;
+	import away3d.animators.data.*;
+	import away3d.animators.nodes.*;
 	import away3d.containers.*;
 	import away3d.core.managers.*;
 	import away3d.debug.*;
@@ -69,6 +69,7 @@ package
 	import flash.display.*;
 	import flash.events.*;
 	import flash.geom.*;
+	import flash.net.*;
 	import flash.utils.*;
 	
 	import starling.core.*;
@@ -142,7 +143,7 @@ package
 		
 		// Runtime variables
 		private var startTime : Number;
-		private var walkState : SkeletonAnimationState;
+		private var walkAnim : SkeletonClipNode;
 		private var modelTexture : BitmapTexture;
 		private var assetsThatAreloaded : Number = 0;
 		private var assetsToLoad : Number = 2;
@@ -476,13 +477,13 @@ package
 		private function initCharacter():void {			
 			// request all the things we loaded into the AssetLibrary
 			skeleton = Skeleton(AssetLibrary.getAsset("Bone001"));
-			walkState = SkeletonAnimationState(AssetLibrary.getAsset("Walk"));
+			walkAnim = SkeletonClipNode(AssetLibrary.getAsset("Walk"));
 			modelTexture = BitmapTexture(AssetLibrary.getAsset(TEXTURE_URL));
 			characterMesh = Mesh(AssetLibrary.getAsset("ONKBA-Corps-lnew"));
 			
 			// Create a material for the character
 			var autoMap:Mapper = new Mapper(modelTexture.bitmapData);
-
+			
 			characterMaterial = new TextureMaterial(modelTexture);
 			characterMaterial.normalMap = new BitmapTexture(autoMap.bitdata[1]);
 			characterMaterial.specularMap = new BitmapTexture(autoMap.bitdata[2]);
@@ -502,14 +503,14 @@ package
 
 			// Define the animation 
 			animationSet = new SkeletonAnimationSet(3);
-			animationSet.addState(walkState.name, walkState);
+			animationSet.addAnimation(walkAnim.name, walkAnim);
 			
 			animator = new SkeletonAnimator(animationSet, skeleton);
-			animator.updateRootPosition = false;
-				
+			animator.updatePosition = false;
+			
 			//apply animator to mesh
 			characterMesh.animator = animator;
-
+			
 			// Begin the animation
 			animator.play("Walk");
 		}
